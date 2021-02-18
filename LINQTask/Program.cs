@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace LINQTask
 {
@@ -67,7 +66,7 @@ namespace LINQTask
 
 			//onlyWinterDebtors.ForEach(Console.WriteLine);
 
-			//8) Borcu, umumi borclarin orta borcunnan cox olan borclulari cixarmaq ve evvel familyaya gore sonra ise meblegin azalmagina gore sortirovka etmek
+			//6) Borcu, umumi borclarin orta borcunnan cox olan borclulari cixarmaq ve evvel familyaya gore sonra ise meblegin azalmagina gore sortirovka etmek
 
 			var averageDebt = debtors.Average(d => d.Debt);
 
@@ -92,7 +91,7 @@ namespace LINQTask
 			//debtorsSortedBySurname.ForEach(Console.WriteLine);
 
 
-			//9) Telefon nomresinde 8 olmayan borclularin yalniz familyasin, yashin ve umumi borcun meblegin cixarmaq
+			//7) Telefon nomresinde 8 olmayan borclularin yalniz familyasin, yashin ve umumi borcun meblegin cixarmaq
 
 			var debtors3 = debtors
 				.Where(d => !d.Phone.Contains('8'))
@@ -106,12 +105,24 @@ namespace LINQTask
 			});
 
 
-			//11)Adinda ve familyasinda hec olmasa 3 eyni herf olan borclularin siyahisin cixarmaq ve onlari elifba sirasina gore sortirovka elemek
+			//8)Adinda ve familyasinda hec olmasa 3 eyni herf olan borclularin siyahisin cixarmaq ve onlari elifba sirasina gore sortirovka elemek
 
+			var debtors4 = debtors
+				.Where(d => d.FullName.CheckOccurrence(3))
+				.OrderBy(d => d.FullName)
+				.ToList();
 
-			//13)borclulardan en coxu hansi ilde dogulubsa hemin ili cixartmaq
+			//debtors4.ForEach(Console.WriteLine);
 
-			//14)Borcu en boyuk olan 5 borclunun siyahisini cixartmaq
+			//9)borclulardan en coxu hansi ilde dogulubsa hemin ili cixartmaq
+
+			var years = debtors.Select(d => d.BirthDay.Year).ToList();
+
+			var year = years.GetMostOccurrenceData();
+
+			//Console.WriteLine(year);
+
+			//10)Borcu en boyuk olan 5 borclunun siyahisini cixartmaq
 
 			var firstFiveHigherDebtors = debtors
 				.OrderByDescending(d => d.Debt)
@@ -120,14 +131,14 @@ namespace LINQTask
 
 			//firstFiveHigherDebtors.ForEach(Console.WriteLine);
 			
-			//15)Butun borcu olanlarin borcunu cemleyib umumi borcu cixartmaq
+			//11)Butun borcu olanlarin borcunu cemleyib umumi borcu cixartmaq
 
 
 			var totalDebt = debtors.Sum(d => d.Debt);
 
 			//Console.WriteLine(totalDebt);
 
-			//16)2ci dunya muharibesin gormush borclularin siyahisi cixartmaq
+			//12)2ci dunya muharibesin gormush borclularin siyahisi cixartmaq
 
 			var debtorsBySecondWoW = debtors
 				.Where(d => d.BirthDay.Year >= 1939 &&
@@ -136,16 +147,68 @@ namespace LINQTask
 
 			//debtorsBySecondWoW.ForEach(Console.WriteLine);
 			
-			//18)Nomresinde tekrar reqemler olmayan borclularin ve onlarin borcunun meblegin cixartmaq
+			//13)Nomresinde tekrar reqemler olmayan borclularin ve onlarin borcunun meblegin cixartmaq
 
+            var debtors5 = debtors.Where(d =>
+            {
+                for (var i = 0; i < d.Phone.Length; i++)
+                {
+                    if (!char.IsDigit(d.Phone[i]))
+                        continue;
 
+                    if (d.Phone.Count(n => n == d.Phone[i]) != 1)
+                        return false;
+				}
 
-			//19)Tesevvur edek ki,butun borclari olanlar bugunden etibaren her ay 500 azn pul odeyecekler.Oz ad gunune kimi borcun oduyub qurtara bilenlerin siyahisin cixartmaq
+                return true;
+            }).ToList();
 
-			//20)Adindaki ve familyasindaki herflerden "smile" sozunu yaza bileceyimiz borclularin siyahisini cixartmaq
+			debtors5.ForEach(d =>
+            {
+                //Console.WriteLine($"{d.FullName} {d.Debt}");
+            });
 
+			//14)Tesevvur edek ki,butun borclari olanlar bugunden etibaren her ay 500 azn pul odeyecekler.Oz ad gunune kimi borcun oduyub qurtara bilenlerin siyahisin cixartmaq
+
+            var debtors6 = debtors.Where(d =>
+            {
+                var birthMonth = d.BirthDay.Month;
+                var debt = d.Debt;
+
+                for (int i = DateTime.Now.Month; i <= birthMonth; i++)
+                {
+                    if (debt % 500 >= 0)
+                        debt -= 500;
+                    else
+                        debt = 0;
+                }
+
+                if (debt == 0)
+                    return true;
+
+                return false;
+            }).ToList();
+
+			//debtors6.ForEach(Console.WriteLine);
+			
+            //15)Adindaki ve familyasindaki herflerden "smile" sozunu yaza bileceyimiz borclularin siyahisini cixartmaq
+
+            var debtors7 = debtors.Where(d =>
+            {
+                var fullname = d.FullName.ToLower();
+                foreach (var character in "smile")
+                {
+                    if (!fullname.Contains(character))
+                        return false;
+                }
+
+                return true;
+            }).ToList();
+
+			//debtors7.ForEach(Console.WriteLine);
 
 			Console.ReadLine();
 		}
+
 	}
 }
