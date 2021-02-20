@@ -149,61 +149,66 @@ namespace LINQTask
 			
 			//13)Nomresinde tekrar reqemler olmayan borclularin ve onlarin borcunun meblegin cixartmaq
 
-            var debtors5 = debtors.Where(d =>
-            {
-                for (var i = 0; i < d.Phone.Length; i++)
-                {
-                    if (!char.IsDigit(d.Phone[i]))
-                        continue;
+			var debtors5 = debtors.Where(d =>
+			{
+				for (var i = 0; i < d.Phone.Length; i++)
+				{
+					if (!char.IsDigit(d.Phone[i]))
+						continue;
 
-                    if (d.Phone.Count(n => n == d.Phone[i]) != 1)
-                        return false;
+					if (d.Phone.Count(n => n == d.Phone[i]) != 1)
+						return false;
 				}
 
-                return true;
-            }).ToList();
+				return true;
+			}).ToList();
 
 			debtors5.ForEach(d =>
-            {
-                //Console.WriteLine($"{d.FullName} {d.Debt}");
-            });
+			{
+				//Console.WriteLine($"{d.FullName} {d.Debt}");
+			});
 
 			//14)Tesevvur edek ki,butun borclari olanlar bugunden etibaren her ay 500 azn pul odeyecekler.Oz ad gunune kimi borcun oduyub qurtara bilenlerin siyahisin cixartmaq
 
-            var debtors6 = debtors.Where(d =>
-            {
-                var birthMonth = d.BirthDay.Month;
-                var debt = d.Debt;
+            var oneYearDebt = 6000;
 
-                for (int i = DateTime.Now.Month; i <= birthMonth; i++)
+            Func<int, int, bool> payChecker = (debt, month) => debt - (month * 500) <= 0;
+			var debtors6 = debtors.Where(d =>
+			{
+                if (d.Debt <= oneYearDebt)
                 {
-                    if (debt % 500 >= 0)
-                        debt -= 500;
+					var birthMonth = d.BirthDay.Month;
+                    var nowMonth = DateTime.Now.Month;
+
+                    if (birthMonth > nowMonth)
+                    {
+                        if (payChecker(d.Debt, (birthMonth - nowMonth)))
+                            return true;
+                    }
                     else
-                        debt = 0;
+                    {
+                        if (payChecker(d.Debt, ((12 + birthMonth) - nowMonth)))
+                            return true;
+                    }
                 }
+				return false;
+			}).ToList();
 
-                if (debt == 0)
-                    return true;
-
-                return false;
-            }).ToList();
-
-			//debtors6.ForEach(Console.WriteLine);
+			debtors6.ForEach(Console.WriteLine);
 			
-            //15)Adindaki ve familyasindaki herflerden "smile" sozunu yaza bileceyimiz borclularin siyahisini cixartmaq
+			//15)Adindaki ve familyasindaki herflerden "smile" sozunu yaza bileceyimiz borclularin siyahisini cixartmaq
 
-            var debtors7 = debtors.Where(d =>
-            {
-                var fullname = d.FullName.ToLower();
-                foreach (var character in "smile")
-                {
-                    if (!fullname.Contains(character))
-                        return false;
-                }
+			var debtors7 = debtors.Where(d =>
+			{
+				var fullname = d.FullName.ToLower();
+				foreach (var character in "smile")
+				{
+					if (!fullname.Contains(character))
+						return false;
+				}
 
-                return true;
-            }).ToList();
+				return true;
+			}).ToList();
 
 			//debtors7.ForEach(Console.WriteLine);
 
